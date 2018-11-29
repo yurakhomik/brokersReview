@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,15 +60,17 @@ public class UserService {
     }
 
     public void createUser(User user) {
-        Optional<User> userbyEmail = userRepository.findByEmail(user.getEmail());
+        Optional<User> userByEmail = userRepository.findByEmail(user.getEmail());
 
-        if (userbyEmail.get().getEmail().equals(user.getEmail())) {
-            throw new IllegalArgumentException("User with email:" + user.getEmail() + " already exist!");
+        if (user.getEmail() == null || user.getPassword().length() == 0) {
+            throw new InvalidParameterException("Incorrect user");
+        }
+
+        if (userByEmail.isPresent()) {
+            throw new InvalidParameterException("User with email:" + user.getEmail() + " already exist!");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
-
-
 }
